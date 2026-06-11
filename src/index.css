@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-dark: #11191f;
+  --color-brand-bg: #f4f3ec;
+  --color-brand-accent: #ffed90;
+  --color-brand-card: #ffffff;
+  
+  --color-badge-yellow: #ffed90;
+  --color-badge-yellow-text: #927500;
+  --color-badge-peach: #F5D6B6;
+  --color-badge-peach-text: #b35900;
+  --color-badge-green: #CDE8D2;
+  --color-badge-green-text: #005a18;
+}
+
+@layer base {
+  body {
+    @apply bg-[var(--color-brand-bg)] text-gray-900 font-sans;
+  }
+}
