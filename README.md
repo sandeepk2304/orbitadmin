@@ -1,151 +1,119 @@
-# MetoAdmin — Admin Dashboard
+# OrbitAdmin — Premium SaaS Admin Dashboard Template
 
-> A production-quality React admin dashboard built for real-world administrative use. Clean, responsive, and feature-complete SPA with REST API integration — ready to drop into any e-commerce or SaaS back-office.
-
----
-
-## 📸 Screenshots
-
-### Login
-![Login](./screenshots/login.png)
-Branded login page with email/password form, show/hide password toggle, "Keep me signed in" checkbox, Google & GitHub OAuth buttons, Zod validation, and a demo credentials hint. Protected routes redirect unauthenticated users here automatically.
+> A premium, production-quality React admin dashboard built for startups, SaaS products, CRM systems, and internal enterprise tools. Built with React 19, TypeScript, Tailwind CSS v4, and Recharts.
 
 ---
 
-### Dashboard
-![Dashboard](./screenshots/dashboard.png)
-E-commerce focused overview — KPI cards (Orders, Revenue, Growth, Customers) pulled from the API, a Sales Report area chart with Today / Monthly / Annual tab switcher, Top Selling Products table, Recent Orders mini-table, Store Performance donut chart, and a Recent Activity feed.
+## 🚀 OrbitAdmin Premium Experience
+
+OrbitAdmin is designed as a developer-friendly starter kit and a state-of-the-art administrative portal. It includes a custom local storage database service to ensure all CRUD mutations are fully persisted across page reloads.
+
+### Key Visual & UX Polish
+- **Sleek Glassmorphic Aesthetics**: Modern dark mode support, harmonized HSL color tokens, curated Google Fonts (Outfit & Plus Jakarta Sans), and smooth transition micro-animations.
+- **Root Landing Page**: Fully responsive landing page highlighting core features, interactive animations, and dark/light toggles.
+- **Roles & Permission Matrix**: A custom checklist grid to map individual access scopes across roles in real-time.
+- **Projects & Tasks Workflow**: Tasks are linked to project cards with automatic progress calculations updating the dashboard overview metrics.
+- **Dynamic Ledger & Reports**: Beautiful interactive Area and Bar charts displaying annual transaction counts, intakes, and operating yields.
 
 ---
 
-### Orders
-![Orders](./screenshots/orders.png)
-Rich order table with 5 stat cards at the top (Completed, Pending, Canceled, New, Returned), search bar, Payment Status and Delivery Status filter dropdowns, sortable columns, customer avatars, payment method badges (Visa / Mastercard / PayPal / Stripe), colour-coded order status pills, and View / Edit / Delete row actions with a confirmation modal.
-
----
-
-### Order Detail
-![Order Detail](./screenshots/order-detail.png)
-Full breakdown of a single order — line items with images, subtotal / shipping / tax / total summary, customer info panel, shipping address, and payment method — plus Print Invoice and Fulfill Order actions.
-
----
-
-### Payments
-![Payments](./screenshots/payments.png)
-4 summary stat cards (Total Processed, Pending Funds, Failed, Success Rate), search + status filter, transaction table with customer avatars, payment method badges, colour-coded status pills (Completed / Pending / Failed), sortable columns, and Delete confirmation modal.
-
----
-
-### Customers
-![Customers](./screenshots/customers.png)
-Customer directory with search, Export and Add Customer buttons. Table shows avatar, name, email, phone, country flag, joined date/time, order count, total spend, and View / Edit / Delete actions. Columns are sortable. Bulk checkbox selection supported.
-
----
-
-### Reports
-![Reports](./screenshots/reports.png)
-Two side-by-side Recharts visualisations — a grouped bar chart comparing Revenue vs Expenses month-over-month, and an area chart showing the overall growth trajectory.
-
----
-
-### Statistics
-![Statistics](./screenshots/statistics.png)
-Donut chart breaking down sales by product category, stat tiles for Conversion Rate and Average Order Value, and a stacked traffic-source progress bar (Direct / Social / Search / Email).
-
----
-
-## 🚀 Tech Stack
+## 🛠️ Tech Stack
 
 | Layer | Library / Tool |
 |---|---|
-| UI Framework | React 19 + TypeScript |
-| Build Tool | Vite 8 |
-| Routing | React Router v7 |
-| Data Fetching | TanStack Query v5 + Axios |
-| Forms & Validation | React Hook Form + Zod |
-| Charts | Recharts 3 |
-| Styling | Tailwind CSS v4 |
-| Icons | Lucide React |
+| **UI Framework** | React 19 + TypeScript |
+| **Build Tool** | Vite 8 |
+| **Routing** | React Router v7 |
+| **Forms & Validation** | React Hook Form + Zod |
+| **Charts** | Recharts 3 |
+| **Styling** | Tailwind CSS v4 |
+| **Icons** | Lucide React |
 
 ---
 
-## ✨ Features
+## ✨ Enterprise Features
 
-- **Authentication** — login / logout with protected routes; session persisted to `localStorage`
-- **Dark / Light mode** — toggled from the header, persisted to `localStorage`
-- **Responsive layout** — fixed sidebar collapses on mobile with an overlay; tested down to 375 px
-- **REST API integration** — CRUD against `jsonplaceholder.typicode.com` with TanStack Query caching
-- **Loading skeletons** — no raw spinners; skeleton cards on every async route
-- **Error banners** — inline error states on all data-fetching pages
-- **Sortable tables** — click any column header to sort ascending / descending
-- **Bulk selection** — checkbox select all / individual rows on Orders and Customers
-- **Delete confirmation modal** — Orders, Payments, and Customers all have a modal before deletion
-- **Order detail drill-down** — click any order row to open a full order breakdown page
-- **Status badges** — colour-coded pill badges across Orders, Payments, and Customers
-- **Form validation** — React Hook Form + Zod on Login, Settings, and UserDetail forms
-- **Dynamic browser tab title** — updates to match the current page on every navigation
+- **Authentication** — Sandbox login (`admin@orbitadmin.com` / `admin123`) with protected routes and context session states.
+- **Local Storage Database Service** — Complete mockup SaaS database seeding users, roles, permissions, projects, tasks, settings, and logs on first boot.
+- **Custom Hooks Integration** — Fully isolated hooks (`useUsers`, `useRoles`, `useProjects`, `useTasks`, `useSettings`, `useNotifications`, `useDashboardData`) keeping views strictly rendering visual elements.
+- **Reusable Foundation UI** — Modular typed wrappers for `DataTable` (with sorting and pagination), `FormBuilder` (mapping Zod validators directly to HTML inputs), `ConfirmDialog`, `Modal`, `StatusBadge`, and `PageHeader`.
+- **Persisted Dark Mode** — Clean class-based dark mode toggle synced with system preferences and cached in storage.
 
 ---
 
-## 📁 Project Structure
+## 📁 Directory Structure
 
 ```
 src/
-├── api/
-│   └── users.ts           # Axios instance + all endpoint helpers (users, posts, todos)
-├── assets/                # Static images / SVGs
-├── components/
-│   ├── Layout.tsx         # Sidebar, header, dark mode toggle, logout button
-│   ├── ProtectedRoute.tsx # Redirects unauthenticated users to /login
-│   └── SkeletonCard.tsx   # Reusable skeleton + error banner components
+├── components/          # Reusable foundation UI components
+│   ├── ConfirmDialog.tsx # Destruction verification modal
+│   ├── DataTable.tsx     # Generic table with search, sorting, pagination
+│   ├── FormBuilder.tsx   # Dynamic form renderer powered by React Hook Form + Zod
+│   ├── Layout.tsx        # Branded layout sidebar and header
+│   ├── Modal.tsx         # Overlay container
+│   ├── OrbitLogo.tsx     # Gradient SVG Orbit logo component
+│   ├── PageHeader.tsx    # Standardized section banner
+│   ├── ProtectedRoute.tsx # Route authentication check
+│   └── StatusBadge.tsx   # State badge resolver (e.g. Active, High, Done)
 ├── context/
-│   └── AuthContext.tsx    # Auth state, login(), logout(), localStorage persistence
-├── pages/
-│   ├── Login.tsx          # Login form with OAuth buttons + Zod validation
-│   ├── Dashboard.tsx      # KPI cards + Sales Report chart + Top Products + Activity
-│   ├── DataPage.tsx       # Orders table with stat cards, filters, sort, actions
-│   ├── OrderDetail.tsx    # Single-order drill-down
-│   ├── UserDetail.tsx     # Add / Edit user form (React Hook Form + Zod)
-│   ├── Payments.tsx       # Transaction table with stat cards + filters
-│   ├── Customers.tsx      # Customer directory with country flags + sort
-│   ├── Reports.tsx        # Bar + area charts
-│   ├── Statistics.tsx     # Donut + KPI tiles
-│   └── Settings.tsx       # Profile form with toggle switches
-└── main.tsx
+│   └── AuthContext.tsx   # Session management
+├── hooks/                # Isolated CRUD and mutation hooks
+│   ├── useDashboardData.ts
+│   ├── useNotifications.ts
+│   ├── usePermissions.ts
+│   ├── useProjects.ts
+│   ├── useRoles.ts
+│   ├── useSettings.ts
+│   ├── useTasks.ts
+│   └── useUsers.ts
+├── pages/                # High-fidelity dashboard views
+│   ├── Dashboard.tsx
+│   ├── Landing.tsx       # Marketing landing page
+│   ├── Login.tsx         # Rebranded sandbox login
+│   ├── Notifications.tsx # Audit log notifications list
+│   ├── Projects.tsx      # Project budget and checklist ledger
+│   ├── Reports.tsx       # Recharts comparative graphs
+│   ├── RolesPermissions.tsx # Role creator and checklist matrix
+│   ├── Settings.tsx      # Tabbed parameters (general, profile, security, notifications)
+│   └── Users.tsx         # Team roster data table and drawers
+├── services/
+│   └── storageService.ts # Local Storage CRUD mock database engine
+├── types/
+│   └── index.ts          # Unified TS interface types
+├── App.tsx               # Route mapping
+└── index.css             # Tailwind v4 configuration, font family setup, scrollbars
 ```
 
 ---
 
 ## ⚙️ Getting Started
 
+### 1. Install dependencies
 ```bash
-# 1. Install dependencies
 npm install
-
-# 2. Start the dev server
-npm run dev
-
-# 3. Open in browser
-# http://localhost:5173
 ```
 
-**Build for production:**
+### 2. Start the development server
+```bash
+npm run dev
+```
 
+### 3. Build for production
 ```bash
 npm run build
 npm run preview
 ```
 
-No environment variables are required — the app uses the public `jsonplaceholder.typicode.com` API by default.
+---
 
-**Demo login credentials:**
-```
-Email:    admin@metoadmin.com
-Password: admin123
-```
+## 🔐 Sandbox Credentials
+
+Use the following credentials on the login screen to access the admin panel:
+- **Email:** `admin@orbitadmin.com`
+- **Password:** `admin123`
 
 ---
 
 ## 📄 License
 
-MIT — free to use as a reference or starting point.
+MIT — Free to use as a starting template or reference for SaaS applications.

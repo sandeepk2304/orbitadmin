@@ -1,23 +1,29 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-import DataPage from './pages/DataPage';
-import Settings from './pages/Settings';
-import OrderDetail from './pages/OrderDetail';
-import UserDetail from './pages/UserDetail';
-import Payments from './pages/Payments';
-import Customers from './pages/Customers';
+import Users from './pages/Users';
+import RolesPermissions from './pages/RolesPermissions';
+import Projects from './pages/Projects';
+import Tasks from './pages/Tasks';
 import Reports from './pages/Reports';
-import Statistics from './pages/Statistics';
+import Notifications from './pages/Notifications';
+import Settings from './pages/Settings';
 
 function App() {
   return (
     <Routes>
+      {/* Public Landing Page */}
+      <Route path="/" element={<Landing />} />
+
+      {/* Public Login Route */}
       <Route path="/login" element={<Login />} />
+
+      {/* Protected Admin Console Routes */}
       <Route
-        path="/"
+        path="/dashboard"
         element={
           <ProtectedRoute>
             <Layout />
@@ -25,15 +31,17 @@ function App() {
         }
       >
         <Route index element={<Dashboard />} />
-        <Route path="data" element={<DataPage />} />
-        <Route path="data/new" element={<UserDetail />} />
-        <Route path="data/:id" element={<OrderDetail />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="payments" element={<Payments />} />
-        <Route path="customers" element={<Customers />} />
+        <Route path="users" element={<Users />} />
+        <Route path="roles-permissions" element={<RolesPermissions />} />
+        <Route path="projects" element={<Projects />} />
+        <Route path="tasks" element={<Tasks />} />
         <Route path="reports" element={<Reports />} />
-        <Route path="statistics" element={<Statistics />} />
+        <Route path="notifications" element={<Notifications />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
+
+      {/* Fallback to root landing page */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
