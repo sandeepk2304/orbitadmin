@@ -196,7 +196,7 @@ export default function Payments() {
                       <td className="px-4 py-3 font-bold text-[#11191f] dark:text-white">${payment.amount.toFixed(2)}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-black text-white ${method.bg}`}>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold text-white ${method.bg}`}>
                             {method.label}
                           </span>
                           {payment.cardEnd

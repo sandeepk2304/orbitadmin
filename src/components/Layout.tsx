@@ -1,13 +1,14 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Shield, FolderKanban, CheckSquare, 
-  BarChart2, Bell, Settings as SettingsIcon, Menu, Moon, Sun, LogOut, Search 
+  BarChart2, Bell, Settings as SettingsIcon, Menu, LogOut, Search 
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../hooks/useSettings';
 import { useNotifications } from '../hooks/useNotifications';
 import OrbitLogo from './OrbitLogo';
+import ThemeToggle from './ThemeToggle';
 
 /**
  * Layout Component
@@ -22,10 +23,6 @@ export default function Layout() {
   const { logout } = useAuth();
   const { settings } = useSettings();
   const { notifications } = useNotifications();
-
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    return (localStorage.getItem('theme') as 'light' | 'dark') || 'light';
-  });
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -46,16 +43,6 @@ export default function Layout() {
     const match = navItems.find((item) => p === item.path || p.startsWith(item.path + '/'));
     document.title = match ? `${match.name} — OrbitAdmin` : 'OrbitAdmin';
   }, [location.pathname]);
-
-  // Apply dark mode class to html document
-  useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('theme', theme);
-  }, [theme]);
 
   // Close sidebar on path navigation (mobile)
   useEffect(() => {
@@ -139,14 +126,8 @@ export default function Layout() {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Dark Mode toggle */}
-            <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="p-2 rounded-lg bg-gray-50 dark:bg-[#242435] text-gray-500 dark:text-[#8a8a9e] hover:text-[#11191f] dark:hover:text-white transition-colors cursor-pointer"
-              aria-label="Toggle dark mode"
-            >
-              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
+            {/* Light / system / dark — owned by ThemeContext, not this component. */}
+            <ThemeToggle />
 
             {/* Notification alert badge */}
             <Link

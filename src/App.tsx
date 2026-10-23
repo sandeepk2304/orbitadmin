@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Landing from './pages/Landing';
@@ -11,6 +11,7 @@ import Tasks from './pages/Tasks';
 import Reports from './pages/Reports';
 import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -41,7 +42,8 @@ function App() {
       </Route>
 
       {/* Fallback to root landing page */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* A real 404, not a silent bounce to the landing page. */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

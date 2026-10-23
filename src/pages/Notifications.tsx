@@ -86,7 +86,7 @@ export default function Notifications() {
 
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                  <h4 className={`text-sm text-[#11191f] dark:text-white leading-tight ${!notif.read ? 'font-extrabold' : 'font-semibold'}`}>
+                  <h4 className={`text-sm text-[#11191f] dark:text-white leading-tight ${!notif.read ? 'font-bold' : 'font-semibold'}`}>
                     {notif.title}
                   </h4>
                   <span className="text-[10px] text-gray-400 dark:text-[#8a8a9e] font-semibold">{notif.createdAt}</span>

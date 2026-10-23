@@ -18,7 +18,7 @@ export default function Statistics() {
         <div className="lg:col-span-1 bg-white dark:bg-[#1a1a27] p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-white/5">
           <h3 className="text-xl font-bold text-[#11191f] dark:text-white mb-6">Sales by Category</h3>
           <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="99%" height="100%">
               <PieChart>
                 <Pie
                   data={data}

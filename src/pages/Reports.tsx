@@ -109,28 +109,28 @@ export default function Reports() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="bg-white dark:bg-[#1a1a27] rounded-3xl border border-gray-100 dark:border-white/5 p-6 shadow-sm">
           <p className="text-[10px] font-bold text-gray-400 dark:text-[#8a8a9e] uppercase tracking-widest">GROSS INTAKE</p>
-          <p className="text-2xl font-black text-[#11191f] dark:text-white mt-1">${totals.revenue.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-[#11191f] dark:text-white mt-1">${totals.revenue.toLocaleString()}</p>
           <span className="inline-flex items-center gap-0.5 text-xs font-bold text-emerald-500 mt-1.5">
             <ArrowUpRight size={13} /> +12.4% <span className="text-[10px] text-gray-400 dark:text-[#8a8a9e] font-normal ml-1">YoY growth</span>
           </span>
         </div>
         <div className="bg-white dark:bg-[#1a1a27] rounded-3xl border border-gray-100 dark:border-white/5 p-6 shadow-sm">
           <p className="text-[10px] font-bold text-gray-400 dark:text-[#8a8a9e] uppercase tracking-widest">TOTAL EXPENDITURES</p>
-          <p className="text-2xl font-black text-[#11191f] dark:text-white mt-1">${totals.expenses.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-[#11191f] dark:text-white mt-1">${totals.expenses.toLocaleString()}</p>
           <span className="inline-flex items-center gap-0.5 text-xs font-bold text-red-500 mt-1.5">
             <ArrowDownRight size={13} /> +4.2% <span className="text-[10px] text-gray-400 dark:text-[#8a8a9e] font-normal ml-1">YoY inflation</span>
           </span>
         </div>
         <div className="bg-white dark:bg-[#1a1a27] rounded-3xl border border-gray-100 dark:border-white/5 p-6 shadow-sm">
           <p className="text-[10px] font-bold text-gray-400 dark:text-[#8a8a9e] uppercase tracking-widest">NET PROFIT YIELD</p>
-          <p className="text-2xl font-black text-emerald-500 mt-1">${totals.profit.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-emerald-500 mt-1">${totals.profit.toLocaleString()}</p>
           <span className="inline-flex items-center gap-0.5 text-xs font-bold text-emerald-500 mt-1.5">
             <ArrowUpRight size={13} /> +18.6% <span className="text-[10px] text-gray-400 dark:text-[#8a8a9e] font-normal ml-1">Net margins</span>
           </span>
         </div>
         <div className="bg-white dark:bg-[#1a1a27] rounded-3xl border border-gray-100 dark:border-white/5 p-6 shadow-sm">
           <p className="text-[10px] font-bold text-gray-400 dark:text-[#8a8a9e] uppercase tracking-widest">OPERATING YIELD</p>
-          <p className="text-2xl font-black text-[#11191f] dark:text-white mt-1">{totals.margin}%</p>
+          <p className="text-2xl font-bold text-[#11191f] dark:text-white mt-1">{totals.margin}%</p>
           <span className="inline-flex items-center gap-0.5 text-xs font-bold text-emerald-500 mt-1.5">
             <TrendingUp size={13} /> Stable <span className="text-[10px] text-gray-400 dark:text-[#8a8a9e] font-normal ml-1">Margin efficiency</span>
           </span>
@@ -147,7 +147,7 @@ export default function Reports() {
             <p className="text-xs text-gray-400 dark:text-[#8a8a9e]">Comparative breakdown of intake vs operating outflow.</p>
           </div>
           <div className="h-80 w-full mt-4">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="99%" height="100%">
               <BarChart data={monthlyReportData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} opacity={0.2} />
                 <XAxis dataKey="month" stroke="#9ca3af" axisLine={false} tickLine={false} />
@@ -171,7 +171,7 @@ export default function Reports() {
             <p className="text-xs text-gray-400 dark:text-[#8a8a9e]">Overview of monthly transaction volume expansion.</p>
           </div>
           <div className="h-80 w-full mt-4">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="99%" height="100%">
               <AreaChart data={monthlyReportData}>
                 <defs>
                   <linearGradient id="growthGrad" x1="0" y1="0" x2="0" y2="1">

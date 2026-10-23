@@ -2,267 +2,401 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Shield, FolderKanban, CheckSquare, BarChart2, Settings,
-  Check, ArrowRight, ExternalLink, ChevronDown, Moon, Sun
+  ArrowRight, ChevronDown, Code2, Check, Copy, KeyRound,
 } from 'lucide-react';
 import OrbitLogo from '../components/OrbitLogo';
+import ThemeToggle from '../components/ThemeToggle';
 
-// Feature items list
+/**
+ * Landing page.
+ *
+ * Rewritten around one idea: show the product. The previous version made its
+ * case entirely in adjectives — "premium", "feature-packed",
+ * "production-ready" — above a page with no picture of the thing being sold.
+ * Anyone evaluating an admin template wants to see the tables and the charts
+ * before they read a word, so the screenshots are now the hero, captured from
+ * the running app rather than drawn, and every module tile deep-links into
+ * the live demo instead of describing it.
+ *
+ * The other change is honesty. The demo is a front end against mock data;
+ * saying so on the page costs nothing and saves the first fifteen minutes of
+ * anyone's evaluation.
+ */
+
+const SHOTS = [
+  { src: '/screenshots/dashboard.webp', label: 'Dashboard', caption: 'KPI cards, revenue trend and an activity feed.' },
+  { src: '/screenshots/users.webp', label: 'Users', caption: 'Sortable, searchable table with row actions.' },
+  { src: '/screenshots/tasks.webp', label: 'Tasks', caption: 'Workflow board with priorities and assignees.' },
+  { src: '/screenshots/reports.webp', label: 'Reports', caption: 'Revenue against expenses, exportable.' },
+];
+
 const FEATURES = [
-  { icon: <LayoutDashboard size={22} />, title: 'SaaS Analytics Dashboard', desc: 'KPI cards, real-time revenue analytics charts, active project trackers, growth metrics, and quick actions.' },
-  { icon: <Shield size={22} />, title: 'Roles & Permission Matrix', desc: 'Manage role assignments and toggles across a permission grid. Control feature authorization dynamically.' },
-  { icon: <FolderKanban size={22} />, title: 'Project Management', desc: 'List active projects with due dates, budgets, team members, and automatic progress bars.' },
-  { icon: <CheckSquare size={22} />, title: 'Kanban Tasks & Priorities', desc: 'Manage task workflow statuses (Todo, In Progress, Review, Done) and priorities (High, Medium, Low).' },
-  { icon: <BarChart2 size={22} />, title: 'Financial & Growth Reports', desc: 'Aggregate revenue vs expenses charts and growth trajectory metrics, ready to export as CSV ledgers.' },
-  { icon: <Settings size={22} />, title: 'Tabbed System Settings', desc: 'Four dedicated panes to configure General, Profile, Security, and email/push Notification thresholds.' },
+  { icon: <LayoutDashboard size={20} />, title: 'Dashboard that earns its space', desc: 'KPI tiles, a 12-month revenue area chart, quick actions and a live activity feed — not four empty cards.' },
+  { icon: <Shield size={20} />, title: 'Roles and a permission matrix', desc: 'A grid of roles against capabilities, toggled per cell, ready to wire to whatever your API calls a scope.' },
+  { icon: <FolderKanban size={20} />, title: 'Projects with real columns', desc: 'Owners, due dates, budgets and progress derived from the data rather than hard-coded.' },
+  { icon: <CheckSquare size={20} />, title: 'Task board', desc: 'Todo, In Progress, Review, Done, with priority and assignee, and empty states that say something useful.' },
+  { icon: <BarChart2 size={20} />, title: 'Reports and CSV export', desc: 'Recharts graphs with abbreviated axes, and a download path your finance person will actually use.' },
+  { icon: <Settings size={20} />, title: 'Settings in four panes', desc: 'General, profile, security and notification thresholds, each a plain form with validation.' },
 ];
 
 const MODULES = [
-  { name: 'Dashboard', route: '/dashboard', desc: 'High-level business intelligence overview' },
-  { name: 'Users List', route: '/dashboard/users', desc: 'User accounts CRUD and status management' },
-  { name: 'Permissions Matrix', route: '/dashboard/roles-permissions', desc: 'Role access controls and permissions grid' },
-  { name: 'Projects Ledger', route: '/dashboard/projects', desc: 'Track progress, members, and budgets' },
-  { name: 'Tasks board', route: '/dashboard/tasks', desc: 'Workflow board with priorities and assignees' },
-  { name: 'Reports Overview', route: '/dashboard/reports', desc: 'Recharts-powered revenue/expense graphs' },
-  { name: 'System Settings', route: '/dashboard/settings', desc: 'General, profile, security tabs' },
+  { name: 'Dashboard', route: '/dashboard', desc: 'Business overview' },
+  { name: 'Users', route: '/dashboard/users', desc: 'Accounts and status' },
+  { name: 'Roles & permissions', route: '/dashboard/roles-permissions', desc: 'Access matrix' },
+  { name: 'Projects', route: '/dashboard/projects', desc: 'Progress and budgets' },
+  { name: 'Tasks', route: '/dashboard/tasks', desc: 'Workflow board' },
+  { name: 'Reports', route: '/dashboard/reports', desc: 'Charts and exports' },
+  { name: 'Notifications', route: '/dashboard/notifications', desc: 'Inbox and read state' },
+  { name: 'Settings', route: '/dashboard/settings', desc: 'Four configuration panes' },
+];
+
+const STACK = [
+  ['React 19', 'with the new compiler-friendly patterns'],
+  ['TypeScript', 'strict mode, no implicit any'],
+  ['Tailwind CSS v4', 'tokens in CSS variables, themeable per brand'],
+  ['React Router 7', 'nested routes, protected sections, real 404s'],
+  ['TanStack Query', 'caching, retries and loading states'],
+  ['MIT licence', 'use it commercially, no attribution required'],
 ];
 
 const FAQS = [
   {
-    q: 'What is OrbitAdmin?',
-    a: 'OrbitAdmin is a premium, developer-friendly admin dashboard built for startups, SaaS products, CRM systems, internal tools, and enterprise applications. It includes prebuilt modules and a generic design for speed.'
+    q: 'Is the demo backed by a real server?',
+    a: 'No, and that is deliberate. The demo signs in against two constants in AuthContext and reads mock data, so you can click through every screen without provisioning anything. Swapping in your own API is a single file: point the client at your base URL and delete the mock module.',
   },
   {
-    q: 'Can I integrate it with a real backend?',
-    a: 'Absolutely. OrbitAdmin is designed with clean architecture and SOLID principles. The business logic is separated from components in custom hooks (useUsers, useRoles, useProjects). You can swap out the local storage database service with actual NestJS/PostgreSQL REST API endpoints easily.'
+    q: 'How do I connect my own backend?',
+    a: 'Each screen takes its data from a hook rather than calling the network itself, so the change is confined to the data layer: replace the mock client with a typed client against your REST or GraphQL endpoint, keep the hook signatures, and every screen keeps working.',
   },
   {
-    q: 'Does it support dark mode?',
-    a: 'Yes, it has a built-in Dark & Light mode system styled using Tailwind CSS v4. The setting persists in localStorage across browser sessions.'
+    q: 'Can I restyle it for my brand?',
+    a: 'The palette lives in CSS variables, so a brand swap is a token change rather than a search-and-replace across components. Dark mode is built in and persists in localStorage.',
   },
   {
-    q: 'What are the license terms?',
-    a: 'OrbitAdmin is licensed under the MIT License. You are free to modify, build SaaS applications, or sell custom dashboards made with this template.'
-  }
+    q: 'What is not included?',
+    a: 'No backend, no database, no auth provider, no payment integration, no email. It is the front end of an admin panel — the part that is tedious to build and easy to get wrong — and it expects you to bring the rest.',
+  },
+  {
+    q: 'What are the licence terms?',
+    a: 'MIT. Modify it, ship it inside a commercial product, sell dashboards built with it. No attribution required.',
+  },
+];
+
+const FOOTER_LINKS: Array<{
+  title: string;
+  links: Array<{ label: string; href: string; external?: boolean }>;
+}> = [
+  {
+    title: 'Product',
+    links: [
+      { label: 'Live demo', href: '/login' },
+      { label: 'Screens', href: '#screens' },
+      { label: 'Features', href: '#features' },
+      { label: 'Tech stack', href: '#stack' },
+    ],
+  },
+  {
+    title: 'Modules',
+    links: [
+      { label: 'Dashboard', href: '/login?next=%2Fdashboard' },
+      { label: 'Users', href: '/login?next=%2Fdashboard%2Fusers' },
+      { label: 'Roles & permissions', href: '/login?next=%2Fdashboard%2Froles-permissions' },
+      { label: 'Reports', href: '/login?next=%2Fdashboard%2Freports' },
+    ],
+  },
+  {
+    title: 'Project',
+    links: [
+      { label: 'Source on GitHub', href: 'https://github.com/sandeepk2304/orbitadmin', external: true },
+      { label: 'Report an issue', href: 'https://github.com/sandeepk2304/orbitadmin/issues', external: true },
+      { label: 'Questions', href: '#faq' },
+      { label: 'MIT licence', href: 'https://opensource.org/licenses/MIT', external: true },
+      { label: 'Built by Sandeep', href: 'https://www.hisandeep.com/', external: true },
+    ],
+  },
 ];
 
 export default function Landing() {
   const navigate = useNavigate();
-  const [activeFaq, setActiveFaq] = useState<number | null>(null);
-  const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
+  const [activeFaq, setActiveFaq] = useState<number | null>(0);
+  const [shot, setShot] = useState(0);
+  const [copied, setCopied] = useState(false);
 
-  const toggleTheme = () => {
-    const nextDark = !isDark;
-    setIsDark(nextDark);
-    if (nextDark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
+  const copyCredentials = async () => {
+    try {
+      await navigator.clipboard.writeText('admin@orbitadmin.com / admin123');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard is blocked outside a secure context; the credentials are
+      // printed beside the button anyway, so there is nothing to recover from.
     }
   };
 
-  const handleDemo = () => {
-    // Redirect to login
-    navigate('/login');
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0d0d14] text-slate-900 dark:text-slate-100 transition-colors duration-200 font-sans">
-      
-      {/* Header NavBar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/70 dark:bg-[#0d0d14]/75 backdrop-blur-md border-b border-slate-200/50 dark:border-white/5 transition-colors">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <div className="min-h-screen bg-white dark:bg-[#0d0d14] text-slate-900 dark:text-slate-100 transition-colors font-sans">
+      <nav className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/60 bg-white/80 backdrop-blur-md transition-colors dark:border-white/5 dark:bg-[#0d0d14]/80">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <OrbitLogo showText />
-          
-          <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-500 dark:text-slate-400">
-            <a href="#features" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Features</a>
-            <a href="#modules" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Modules</a>
-            <a href="#faq" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">FAQ</a>
+
+          <div className="hidden items-center gap-8 text-sm font-medium text-slate-500 dark:text-slate-400 md:flex">
+            <a href="#screens" className="transition-colors hover:text-indigo-600 dark:hover:text-indigo-400">Screens</a>
+            <a href="#features" className="transition-colors hover:text-indigo-600 dark:hover:text-indigo-400">Features</a>
+            <a href="#stack" className="transition-colors hover:text-indigo-600 dark:hover:text-indigo-400">Stack</a>
+            <a href="#faq" className="transition-colors hover:text-indigo-600 dark:hover:text-indigo-400">FAQ</a>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Theme Toggle */}
-            <button 
-              onClick={toggleTheme} 
-              className="p-2 rounded-lg bg-slate-100 dark:bg-[#1a1a27] text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            {/* Hidden on a phone: "Live demo" goes to the same place, and at
+                390px the two buttons together wrapped "Sign in" onto a second
+                line inside the header. */}
+            <button
+              onClick={() => navigate('/login')}
+              className="hidden cursor-pointer px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 sm:block"
             >
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+              Sign in
             </button>
-
-            <button 
-              onClick={() => navigate('/login')} 
-              className="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors px-3 py-1.5 cursor-pointer"
+            <button
+              onClick={() => navigate('/login')}
+              className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-indigo-500/10 transition-all hover:bg-indigo-700"
             >
-              Sign In
-            </button>
-            <button 
-              onClick={handleDemo} 
-              className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg transition-all shadow-md shadow-indigo-500/10 cursor-pointer"
-            >
-              Live Demo <ArrowRight size={14} />
+              Live demo <ArrowRight size={14} />
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-6 text-center overflow-hidden">
-        {/* Glowing backgrounds */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-indigo-500/10 to-purple-500/10 blur-3xl pointer-events-none" />
-        
-        <div className="max-w-4xl mx-auto relative z-10">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-bold mb-6 tracking-wide border border-indigo-200/50 dark:border-indigo-500/20">
-            🚀 Commercial-Grade Admin Dashboard Template
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden px-6 pt-28 pb-16">
+        <div className="pointer-events-none absolute left-1/2 top-0 h-[460px] w-[760px] -translate-x-1/2 rounded-full bg-gradient-to-tr from-indigo-500/10 to-purple-500/10 blur-3xl" />
+
+        <div className="relative z-10 mx-auto max-w-4xl text-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-indigo-200/60 bg-indigo-50 px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400">
+            Open source admin template · MIT
           </span>
-          
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight mb-6">
-            The Production-Ready Foundation<br />
+
+          <h1 className="mt-6 text-[2.5rem] font-semibold leading-[1.08] tracking-[-0.03em] md:text-[3.25rem]">
+            The admin panel,
+            <br />
             <span className="bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              For Your SaaS CRM & Apps
+              already built
             </span>
           </h1>
 
-          <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            OrbitAdmin is a premium, feature-packed admin template built on React, TypeScript, and Tailwind CSS. Skip weeks of boilerplate setup and launch your SaaS internal tools instantly.
+          <p className="mx-auto mt-6 max-w-[34rem] text-[17px] leading-[1.65] text-slate-500 dark:text-slate-400">
+            Eight working screens — tables, forms, charts, a permission matrix and a task
+            board — on React 19, TypeScript and Tailwind v4. Bring your API; the tedious
+            half is done.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <button 
-              onClick={handleDemo} 
-              className="flex items-center gap-2 px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/25 hover:-translate-y-0.5 cursor-pointer"
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+            <button
+              onClick={() => navigate('/login')}
+              className="flex cursor-pointer items-center gap-2 rounded-xl bg-indigo-600 px-7 py-3.5 font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:-translate-y-0.5 hover:bg-indigo-700"
             >
-              Launch Live Demo <ArrowRight size={16} />
+              Open the live demo <ArrowRight size={16} />
             </button>
-            <a 
-              href="https://github.com" 
-              target="_blank" 
+            <a
+              href="https://github.com/sandeepk2304/orbitadmin"
+              target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-2 px-8 py-3.5 bg-white dark:bg-[#1a1a27] hover:bg-slate-50 dark:hover:bg-[#222235] text-slate-900 dark:text-white font-bold rounded-xl border border-slate-200 dark:border-white/5 transition-all shadow-sm cursor-pointer"
+              className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-7 py-3.5 font-semibold text-slate-700 transition-all hover:-translate-y-0.5 hover:border-slate-300 dark:border-white/10 dark:bg-[#1a1a27] dark:text-slate-200"
             >
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg> View on GitHub
+              <Code2 size={16} /> Source on GitHub
             </a>
           </div>
 
-          {/* Quick specs badge */}
-          <div className="flex flex-wrap items-center justify-center gap-6 mt-10 text-sm text-slate-400 dark:text-slate-500 font-semibold">
-            <span className="flex items-center gap-1.5"><Check size={15} className="text-emerald-500" /> React + TypeScript</span>
-            <span className="flex items-center gap-1.5"><Check size={15} className="text-emerald-500" /> Tailwind CSS v4</span>
-            <span className="flex items-center gap-1.5"><Check size={15} className="text-emerald-500" /> Persisted Dark Mode</span>
-            <span className="flex items-center gap-1.5"><Check size={15} className="text-emerald-500" /> MIT License</span>
+          {/* The demo credentials, on the page rather than in the source. */}
+          <button
+            onClick={copyCredentials}
+            className="mx-auto mt-6 flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200/70 bg-slate-50 px-3.5 py-2 text-xs font-medium text-slate-500 transition-colors hover:border-indigo-200 hover:text-indigo-600 dark:border-white/5 dark:bg-white/5 dark:text-slate-400 dark:hover:text-indigo-400"
+          >
+            {copied ? <Check size={13} /> : <KeyRound size={13} />}
+            admin@orbitadmin.com · admin123
+            {copied ? <span className="text-indigo-500">copied</span> : <Copy size={13} />}
+          </button>
+        </div>
+
+        {/* ── The product itself ─────────────────────────────────────────── */}
+        <div id="screens" className="relative z-10 mx-auto mt-14 max-w-6xl scroll-mt-20">
+          <div className="mb-4 flex flex-wrap justify-center gap-2">
+            {SHOTS.map((item, i) => (
+              <button
+                key={item.label}
+                onClick={() => setShot(i)}
+                aria-current={shot === i}
+                className={`cursor-pointer rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors ${
+                  shot === i
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-slate-100 text-slate-500 hover:text-indigo-600 dark:bg-[#1a1a27] dark:text-slate-400'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
           </div>
+
+          {/* A browser frame, so the screenshot reads as a product and not as
+              a decorative image floating on the page. */}
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 dark:border-white/10 dark:bg-[#1a1a27] dark:shadow-black/40">
+            <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-2.5 dark:border-white/5 dark:bg-[#15151f]">
+              <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
+              <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+              <span className="ml-3 truncate rounded bg-white px-2.5 py-0.5 text-[11px] font-medium text-slate-400 dark:bg-[#0d0d14]">
+                orbitadmin{MODULES[shot]?.route ?? '/dashboard'}
+              </span>
+            </div>
+            <img
+              src={SHOTS[shot].src}
+              alt={`${SHOTS[shot].label} screen: ${SHOTS[shot].caption}`}
+              width={1440}
+              height={900}
+              loading="eager"
+              className="block w-full"
+            />
+          </div>
+          <p className="mt-3 text-center text-sm text-slate-400">{SHOTS[shot].caption}</p>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 px-6 bg-white dark:bg-[#11111a] border-y border-slate-200/50 dark:border-white/5 transition-colors">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Premium Features</span>
-            <h2 className="text-3xl md:text-4xl font-extrabold mt-2">Everything you need, built to scale</h2>
-            <p className="text-slate-400 mt-3 max-w-xl mx-auto">No placeholders. Fully interactive dashboards, user CRUD list, roles settings, permission matrix grid, and task workflow modules.</p>
-          </div>
+      {/* ── Features ─────────────────────────────────────────────────────── */}
+      <section id="features" className="scroll-mt-20 border-t border-slate-100 px-6 py-20 dark:border-white/5">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-center text-[1.75rem] font-semibold md:text-[2rem]">What is in the box</h2>
+          <p className="mx-auto mt-3 max-w-xl text-center text-slate-500 dark:text-slate-400">
+            Every screen below is in the demo. Nothing here is a mock-up or a roadmap item.
+          </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {FEATURES.map((feat, idx) => (
-              <div 
-                key={idx} 
-                className="p-6 rounded-2xl border border-slate-100 dark:border-white/[0.03] bg-slate-50/50 dark:bg-[#1a1a27]/20 hover:border-indigo-500/40 dark:hover:border-indigo-500/40 transition-all hover:shadow-md group"
+          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map((feature) => (
+              <div
+                key={feature.title}
+                className="rounded-2xl border border-slate-200/70 bg-white p-6 transition-all hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-500/5 dark:border-white/5 dark:bg-[#1a1a27] dark:hover:border-indigo-500/30"
               >
-                <div className="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  {feat.icon}
-                </div>
-                <h3 className="font-bold text-lg mb-2">{feat.title}</h3>
-                <p className="text-sm text-slate-400 leading-relaxed">{feat.desc}</p>
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+                  {feature.icon}
+                </span>
+                <h3 className="mt-4 text-[15px] font-semibold">{feature.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                  {feature.desc}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Interactive Modules Section */}
-      <section id="modules" className="py-20 px-6 bg-slate-50 dark:bg-[#0d0d14] transition-colors">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            
-            {/* Left Column: Text */}
-            <div>
-              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Pre-Built Pages</span>
-              <h2 className="text-3xl md:text-4xl font-extrabold mt-2 mb-6">Fully interactive SaaS dashboard modules</h2>
-              <p className="text-slate-400 leading-relaxed mb-8">
-                OrbitAdmin includes the core screens required for modern business portals. Manage users list, toggle statuses, change user roles, modify permissions matrix checkbox grid, organize project boards, and control Settings tabs.
-              </p>
-              
-              <div className="space-y-3">
-                {MODULES.slice(0, 4).map((mod, idx) => (
-                  <div key={idx} className="flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
-                      <Check size={12} />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-sm">{mod.name}</h4>
-                      <p className="text-xs text-slate-400 mt-0.5">{mod.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+      {/* ── Modules: every one a link into the demo ──────────────────────── */}
+      <section className="border-t border-slate-100 bg-slate-50 px-6 py-20 dark:border-white/5 dark:bg-[#11111a]">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-center text-[1.75rem] font-semibold md:text-[2rem]">Jump straight in</h2>
+          <p className="mx-auto mt-3 max-w-xl text-center text-slate-500 dark:text-slate-400">
+            Each tile opens that screen in the demo. No sign-up — the credentials are
+            filled for you.
+          </p>
 
-            {/* Right Column: Code/UI card preview */}
-            <div className="bg-white dark:bg-[#1a1a27] rounded-3xl border border-slate-200/50 dark:border-white/5 shadow-xl p-8 transition-colors">
-              <h3 className="text-lg font-bold mb-4">Module Routes Checklist</h3>
-              <div className="divide-y divide-slate-100 dark:divide-white/5">
-                {MODULES.map((mod, idx) => (
-                  <div key={idx} className="py-3.5 flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-bold">{mod.name}</p>
-                      <p className="text-xs text-slate-400 font-semibold">{mod.desc}</p>
-                    </div>
-                    <button 
-                      onClick={() => navigate(mod.route)}
-                      className="text-xs font-bold text-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1 cursor-pointer"
-                    >
-                      Inspect <ExternalLink size={12} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
+          <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {MODULES.map((module) => (
+              <button
+                key={module.route}
+                onClick={() => navigate(`/login?next=${encodeURIComponent(module.route)}`)}
+                className="group cursor-pointer rounded-xl border border-slate-200/70 bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:border-indigo-300 dark:border-white/5 dark:bg-[#1a1a27] dark:hover:border-indigo-500/40"
+              >
+                <span className="flex items-center justify-between text-[15px] font-semibold">
+                  {module.name}
+                  <ArrowRight
+                    size={14}
+                    className="text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:text-indigo-500"
+                  />
+                </span>
+                <span className="mt-1 block text-sm text-slate-500 dark:text-slate-400">
+                  {module.desc}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section id="faq" className="py-20 px-6 bg-white dark:bg-[#11111a] border-t border-slate-200/50 dark:border-white/5 transition-colors">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Questions</span>
-            <h2 className="text-3xl font-extrabold mt-2">Frequently Asked Questions</h2>
+      {/* ── Stack ────────────────────────────────────────────────────────── */}
+      <section id="stack" className="scroll-mt-20 border-t border-slate-100 px-6 py-20 dark:border-white/5">
+        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+          <div>
+            <h2 className="text-[1.75rem] font-semibold md:text-[2rem]">Built on what you already use</h2>
+            <p className="mt-4 leading-relaxed text-slate-500 dark:text-slate-400">
+              No bespoke framework, no proprietary component layer to learn and no runtime
+              you have to keep up with. If you have shipped a React app, you can read every
+              file in this one.
+            </p>
+
+            <ul className="mt-8 space-y-3">
+              {STACK.map(([name, detail]) => (
+                <li key={name} className="flex gap-3">
+                  <Check size={18} className="mt-0.5 shrink-0 text-indigo-500" />
+                  <span className="text-sm">
+                    <span className="font-semibold">{name}</span>
+                    <span className="text-slate-500 dark:text-slate-400"> — {detail}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <div className="space-y-4">
-            {FAQS.map((faq, idx) => {
-              const isOpen = activeFaq === idx;
+          {/* Shows the one change a developer actually has to make. */}
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-[#11111a] shadow-xl dark:border-white/10">
+            <div className="flex items-center gap-2 border-b border-white/5 px-4 py-2.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-red-400/70" />
+              <span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
+              <span className="ml-2 text-[11px] font-medium text-slate-500">src/api/client.ts</span>
+            </div>
+            <pre className="overflow-x-auto p-5 text-[13px] leading-relaxed text-slate-300">
+              <code>{`// Point it at your own API and the mock data is gone.
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  withCredentials: true,
+});
+
+// One interceptor refreshes an expired token
+// and replays the request that hit the 401.
+api.interceptors.response.use(ok, refreshOnce);
+
+export default api;`}</code>
+            </pre>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ──────────────────────────────────────────────────────────── */}
+      <section id="faq" className="scroll-mt-20 border-t border-slate-100 bg-slate-50 px-6 py-20 dark:border-white/5 dark:bg-[#11111a]">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="text-center text-[1.75rem] font-semibold md:text-[2rem]">Questions</h2>
+
+          <div className="mt-10 space-y-3">
+            {FAQS.map((faq, i) => {
+              const open = activeFaq === i;
               return (
-                <div 
-                  key={idx} 
-                  className="rounded-2xl border border-slate-200/60 dark:border-white/5 bg-slate-50/30 dark:bg-[#1a1a27]/10 overflow-hidden transition-colors"
+                <div
+                  key={faq.q}
+                  className="overflow-hidden rounded-xl border border-slate-200/70 bg-white dark:border-white/5 dark:bg-[#1a1a27]"
                 >
-                  <button 
-                    onClick={() => setActiveFaq(isOpen ? null : idx)}
-                    className="w-full px-6 py-5 flex items-center justify-between text-left font-bold text-sm md:text-base text-slate-800 dark:text-slate-200 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors cursor-pointer"
+                  <button
+                    onClick={() => setActiveFaq(open ? null : i)}
+                    aria-expanded={open}
+                    className="flex w-full cursor-pointer items-center justify-between gap-4 px-5 py-4 text-left text-[15px] font-semibold"
                   >
-                    <span>{faq.q}</span>
-                    <ChevronDown 
-                      size={18} 
-                      className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+                    {faq.q}
+                    <ChevronDown
+                      size={18}
+                      className={`shrink-0 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`}
                     />
                   </button>
-                  {isOpen && (
-                    <div className="px-6 pb-5 text-sm text-slate-500 dark:text-slate-400 leading-relaxed border-t border-slate-200/20 dark:border-white/5 pt-3">
+                  {open && (
+                    <p className="px-5 pb-5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                       {faq.a}
-                    </div>
+                    </p>
                   )}
                 </div>
               );
@@ -271,51 +405,118 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-24 px-6 bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 text-center relative overflow-hidden">
-        {/* Glow */}
-        <div className="absolute inset-0 bg-white/[0.02] backdrop-blur-sm pointer-events-none" />
-        
-        <div className="max-w-3xl mx-auto relative z-10">
-          <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6 leading-tight">
-            Ready to enhance your development speed?
-          </h2>
-          <p className="text-indigo-200 mb-10 text-lg max-w-xl mx-auto leading-relaxed">
-            Open the live demo portal, sign in with sandbox credentials, and check the code architecture.
+      {/* ── Close ────────────────────────────────────────────────────────── */}
+      <section className="border-t border-slate-100 px-6 py-20 text-center dark:border-white/5">
+        <div className="mx-auto max-w-2xl">
+          <h2 className="text-[1.75rem] font-semibold md:text-[2rem]">Have a look around</h2>
+          <p className="mx-auto mt-3 max-w-lg text-slate-500 dark:text-slate-400">
+            The demo is the whole template, running. Click through it before you decide
+            whether it saves you a fortnight.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button 
-              onClick={handleDemo} 
-              className="w-full sm:w-auto px-8 py-4 bg-white text-indigo-700 font-extrabold rounded-xl hover:bg-slate-50 transition-all shadow-xl hover:-translate-y-0.5 cursor-pointer text-base"
-            >
-              Sign In to Sandbox
-            </button>
-            <button 
-              onClick={handleDemo} 
-              className="w-full sm:w-auto px-8 py-4 bg-indigo-500/30 text-white font-bold rounded-xl border border-white/20 hover:bg-indigo-500/40 transition-colors cursor-pointer text-base"
-            >
-              Explore Sandbox Modules
-            </button>
-          </div>
+          <button
+            onClick={() => navigate('/login')}
+            className="mx-auto mt-8 flex cursor-pointer items-center gap-2 rounded-xl bg-indigo-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:-translate-y-0.5 hover:bg-indigo-700"
+          >
+            Open the live demo <ArrowRight size={16} />
+          </button>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-slate-900 text-slate-400 py-12 px-6 border-t border-slate-800">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <OrbitLogo showText textColor="text-white" />
-          
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm font-semibold">
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#modules" className="hover:text-white transition-colors">Modules</a>
-            <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
-            <button onClick={handleDemo} className="hover:text-white transition-colors cursor-pointer">Live Demo</button>
+      {/*
+        A real footer, not a copyright line.
+        
+        Two jobs: catch the people who scrolled the whole page without
+        clicking anything — which is most of them — and answer the questions
+        that decide an evaluation. Nothing here is invented: every link goes
+        to a route that exists or an anchor on this page, because a footer
+        full of dead links is worse than a short one.
+      */}
+      <footer className="border-t border-slate-100 bg-slate-50 dark:border-white/5 dark:bg-[#11111a]">
+        <div className="mx-auto max-w-6xl px-6 py-14">
+          <div className="grid gap-10 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
+            <div className="max-w-xs">
+              <OrbitLogo showText />
+              <p className="mt-4 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                An open-source admin front end: eight working screens on React 19,
+                TypeScript and Tailwind v4. Bring your own API.
+              </p>
+
+              <div className="mt-5 flex flex-wrap gap-1.5">
+                {['React 19', 'TypeScript', 'Tailwind v4', 'MIT'].map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-md bg-white px-2 py-1 text-[11px] font-medium text-slate-500 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-400 dark:ring-white/5"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {FOOTER_LINKS.map((column) => (
+              <div key={column.title}>
+                <h3 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-900 dark:text-white">
+                  {column.title}
+                </h3>
+                <ul className="mt-4 space-y-2.5 text-sm">
+                  {column.links.map((link) => (
+                    <li key={link.label}>
+                      {link.href.startsWith('#') || link.external ? (
+                        <a
+                          href={link.href}
+                          {...(link.external
+                            ? { target: '_blank', rel: 'noreferrer' }
+                            : {})}
+                          className="text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
+                        >
+                          {link.label}
+                        </a>
+                      ) : (
+                        <button
+                          onClick={() => navigate(link.href)}
+                          className="cursor-pointer text-left text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
+                        >
+                          {link.label}
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
-          
-          <p className="text-sm">© {new Date().getFullYear()} OrbitAdmin. Released under the MIT License.</p>
+
+          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-200/70 pt-6 text-sm text-slate-400 dark:border-white/5 sm:flex-row">
+            <p>
+              © {new Date().getFullYear()} OrbitAdmin. MIT licensed — use it commercially,
+              no attribution required.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <p className="flex items-center gap-1.5">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                Demo runs on mock data
+              </p>
+              {/* The person who built it, named and linked. */}
+              <a
+                href="https://www.hisandeep.com/"
+                target="_blank"
+                rel="noreferrer"
+                className="group flex items-center gap-1.5 font-medium text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
+              >
+                Designed &amp; built by
+                <span className="bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
+                  Sandeep
+                </span>
+                <ArrowRight
+                  size={13}
+                  className="transition-transform group-hover:translate-x-0.5"
+                />
+              </a>
+            </div>
+          </div>
         </div>
       </footer>
-
     </div>
   );
 }

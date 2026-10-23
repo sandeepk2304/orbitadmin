@@ -112,7 +112,7 @@ export default function Dashboard() {
               <p className="text-[10px] font-bold text-gray-400 dark:text-[#8a8a9e] uppercase tracking-widest">
                 {card.label}
               </p>
-              <p className="text-2xl font-black text-[#11191f] dark:text-white tracking-tight">
+              <p className="text-2xl font-bold text-[#11191f] dark:text-white tracking-tight">
                 {card.value}
               </p>
               <div className="flex items-center gap-1">
@@ -148,8 +148,12 @@ export default function Dashboard() {
           </div>
 
           <div className="h-72 w-full mt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={MONTHLY_DATA} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+            <ResponsiveContainer width="99%" height="100%">
+              {/* `left: -20` pulled the Y axis off the canvas, so every tick
+                  rendered with its first digit cut off — "60000" read as
+                  "0000". The axis gets its own width instead, and the ticks
+                  are abbreviated so that width stays small. */}
+              <AreaChart data={MONTHLY_DATA} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#6366f1" stopOpacity={0.25} />
@@ -162,7 +166,16 @@ export default function Dashboard() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} opacity={0.2} />
                 <XAxis dataKey="name" stroke="#9ca3af" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
-                <YAxis stroke="#9ca3af" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
+                <YAxis
+                  stroke="#9ca3af"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11 }}
+                  width={44}
+                  tickFormatter={(value: number) =>
+                    value >= 1000 ? `${Math.round(value / 1000)}k` : String(value)
+                  }
+                />
                 <Tooltip
                   contentStyle={{ backgroundColor: '#11191f', color: '#ffffff', borderRadius: '12px', border: 'none', fontSize: '12px' }}
                 />

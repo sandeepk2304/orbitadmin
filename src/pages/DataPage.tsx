@@ -245,7 +245,7 @@ export default function DataPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-black text-white ${METHOD_STYLE[order.method]}`}>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold text-white ${METHOD_STYLE[order.method]}`}>
                             {order.method.toUpperCase()}
                           </span>
                           {order.cardEnd

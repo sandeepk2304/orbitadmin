@@ -131,7 +131,7 @@ export default function Settings() {
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold transition-all border-b-2 cursor-pointer ${
               activeTab === tab.id
-                ? 'border-indigo-500 text-indigo-500 font-extrabold'
+                ? 'border-indigo-500 text-indigo-500 font-bold'
                 : 'border-transparent text-gray-500 dark:text-[#8a8a9e] hover:text-gray-800 dark:hover:text-white'
             }`}
           >

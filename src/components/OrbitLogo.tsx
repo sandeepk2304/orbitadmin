@@ -57,7 +57,7 @@ export default function OrbitLogo({ size = 32, showText = false, textColor = 'te
 
       {/* Brand Text */}
       {showText && (
-        <span className={`text-xl font-extrabold tracking-tight ${textColor}`}>
+        <span className={`text-xl font-bold tracking-tight ${textColor}`}>
           Orbit<span className="bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">Admin</span>
         </span>
       )}
