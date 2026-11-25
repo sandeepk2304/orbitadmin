@@ -485,7 +485,7 @@ setProjects(updated);`}</code>
           <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-200/70 pt-6 text-sm text-slate-400 dark:border-white/5 sm:flex-row">
             <p>
               © {new Date().getFullYear()} OrbitAdmin. MIT licensed — use it commercially,
-              no attribution required.
+              keep the licence notice.
             </p>
 
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
