@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, AreaChart, Area, Legend 
@@ -9,6 +9,7 @@ import {
 import PageHeader from '../components/PageHeader';
 import DataTable from '../components/DataTable';
 import type { ColumnDef } from '../components/DataTable';
+import { downloadCsv, toCsv } from '../utils/csv';
 
 const monthlyReportData = [
   { month: 'Jan', revenue: 42000, expenses: 24000, transactions: 1420 },
@@ -26,8 +27,6 @@ const monthlyReportData = [
 ];
 
 export default function Reports() {
-  const [yearFilter, setYearFilter] = useState('2026');
-
   // Compute overall financial summaries
   const totals = useMemo(() => {
     const revenue = monthlyReportData.reduce((sum, item) => sum + item.revenue, 0);
@@ -42,6 +41,16 @@ export default function Reports() {
       margin,
     };
   }, []);
+
+  // The same columns as the table, with plain numbers a spreadsheet can add up.
+  const exportCsv = () =>
+    downloadCsv(
+      'orbitadmin-report.csv',
+      toCsv(
+        ['Month', 'Revenue', 'Expenses', 'Net profit', 'Transactions'],
+        monthlyReportData.map((m) => [m.month, m.revenue, m.expenses, m.revenue - m.expenses, m.transactions]),
+      ),
+    );
 
   const columns: ColumnDef<typeof monthlyReportData[0]>[] = [
     { key: 'month', header: 'Fiscal Month', sortable: true },
@@ -86,18 +95,10 @@ export default function Reports() {
         description="Analyze annual business operations metrics, gross revenue, expenditures, and net yield metrics."
         action={
           <div className="flex gap-2.5">
-            <select
-              value={yearFilter}
-              onChange={(e) => setYearFilter(e.target.value)}
-              className="appearance-none pl-3 pr-8 py-2 text-sm rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1a1a27] text-[#11191f] dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 cursor-pointer"
-            >
-              <option value="2026">Fiscal Year 2026</option>
-              <option value="2025">Fiscal Year 2025</option>
-            </select>
-            
-            <button 
+            <button
+              type="button"
               className="flex items-center gap-1.5 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-md shadow-indigo-500/20 transition-all cursor-pointer"
-              onClick={() => alert('Exporting CSV Ledger...')}
+              onClick={exportCsv}
             >
               <Download size={14} /> Export CSV
             </button>

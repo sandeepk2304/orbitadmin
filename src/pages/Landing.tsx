@@ -55,18 +55,17 @@ const STACK = [
   ['TypeScript', 'strict mode, no implicit any'],
   ['Tailwind CSS v4', 'tokens in CSS variables, themeable per brand'],
   ['React Router 7', 'nested routes, protected sections, real 404s'],
-  ['TanStack Query', 'caching, retries and loading states'],
   ['MIT licence', 'use it commercially, no attribution required'],
 ];
 
 const FAQS = [
   {
     q: 'Is the demo backed by a real server?',
-    a: 'No, and that is deliberate. The demo signs in against two constants in AuthContext and reads mock data, so you can click through every screen without provisioning anything. Swapping in your own API is a single file: point the client at your base URL and delete the mock module.',
+    a: 'No, and that is deliberate. The demo signs in against two constants in AuthContext and keeps its data in your browser, so you can click through every screen without provisioning anything.',
   },
   {
     q: 'How do I connect my own backend?',
-    a: 'Each screen takes its data from a hook rather than calling the network itself, so the change is confined to the data layer: replace the mock client with a typed client against your REST or GraphQL endpoint, keep the hook signatures, and every screen keeps working.',
+    a: 'Each screen takes its data from a hook rather than calling the network itself, so the change is confined to the data layer: rewrite the hooks to call your REST or GraphQL endpoint, keep what they return, and add loading states where a screen now waits.',
   },
   {
     q: 'Can I restyle it for my brand?',
@@ -350,20 +349,17 @@ export default function Landing() {
               <span className="h-2.5 w-2.5 rounded-full bg-red-400/70" />
               <span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
-              <span className="ml-2 text-[11px] font-medium text-slate-500">src/api/client.ts</span>
+              <span className="ml-2 text-[11px] font-medium text-slate-500">src/hooks/useProjects.ts</span>
             </div>
             <pre className="overflow-x-auto p-5 text-[13px] leading-relaxed text-slate-300">
-              <code>{`// Point it at your own API and the mock data is gone.
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-  withCredentials: true,
-});
+              <code>{`// Screens only ever call hooks. Rewrite a hook to
+// talk to your API and the screen does not change.
+const [projects, setProjects] = useState(
+  () => storageService.getProjects(),
+);
 
-// One interceptor refreshes an expired token
-// and replays the request that hit the 401.
-api.interceptors.response.use(ok, refreshOnce);
-
-export default api;`}</code>
+storageService.saveProjects(updated);
+setProjects(updated);`}</code>
             </pre>
           </div>
         </div>

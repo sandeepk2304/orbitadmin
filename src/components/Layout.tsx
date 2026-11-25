@@ -1,7 +1,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Shield, FolderKanban, CheckSquare, 
-  BarChart2, Bell, Settings as SettingsIcon, Menu, LogOut, Search 
+  BarChart2, Bell, Settings as SettingsIcon, Menu, LogOut
 } from 'lucide-react';
 import { Suspense, useState, useEffect } from 'react';
 import { useAuth } from '../context/auth';
@@ -61,18 +61,6 @@ export default function Layout() {
         {/* Brand Header */}
         <div className="p-6 border-b border-white/[0.04]">
           <OrbitLogo showText textColor="text-white" />
-        </div>
-
-        {/* Sidebar Quick Search */}
-        <div className="px-4 mt-5 mb-3">
-          <div className="flex items-center bg-[#242435] rounded-lg px-3 py-2 border border-white/5">
-            <Search size={16} className="text-[#8a8a9e] mr-2" />
-            <input
-              type="text"
-              placeholder="Quick search..."
-              className="bg-transparent border-none text-xs text-white placeholder-[#8a8a9e] focus:outline-none w-full"
-            />
-          </div>
         </div>
 
         {/* Navigation items */}

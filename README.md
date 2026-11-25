@@ -84,6 +84,7 @@ src/
 ├── types/
 │   └── index.ts          # Unified TS interface types
 ├── utils/
+│   ├── csv.ts            # CSV text and download
 │   └── progress.ts       # Project progress, calculated from its tasks
 ├── App.tsx               # Route mapping, one lazy chunk per screen
 └── index.css             # Tailwind v4 configuration, font family setup, scrollbars
