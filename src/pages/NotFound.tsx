@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/auth';
 
 /**
  * Unknown URLs used to `<Navigate to="/" replace />`, which dropped the

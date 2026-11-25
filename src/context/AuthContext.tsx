@@ -1,16 +1,6 @@
-import { createContext, useContext, useState } from 'react';
+import { useState } from 'react';
 import type { ReactNode } from 'react';
-
-/**
- * AuthContextType Definition
- */
-interface AuthContextType {
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-}
-
-const AuthContext = createContext<AuthContextType | null>(null);
+import { AuthContext } from './auth';
 
 // Demo credentials updated for OrbitAdmin
 const DEMO_EMAIL    = 'admin@orbitadmin.com';
@@ -48,15 +38,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-/**
- * Custom Hook: useAuth
- * 
- * Hook to easily access authentication functions.
- */
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used inside AuthProvider');
-  return ctx;
 }

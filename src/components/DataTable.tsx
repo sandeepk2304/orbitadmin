@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import type { ReactNode } from 'react';
 import { ArrowUpDown, ChevronDown } from 'lucide-react';
 import SearchInput from './SearchInput';
 import Pagination from './Pagination';
@@ -27,33 +28,36 @@ import EmptyState from './EmptyState';
  * @param defaultSortAsc Sort ascending or descending default
  * @param itemsPerPage Records to show per page
  */
-export interface ColumnDef<T> {
-  key: keyof T | string;
-  header: string;
-  sortable?: boolean;
-  align?: 'left' | 'right' | 'center';
-  render?: (value: any, item: T) => React.ReactNode;
-}
+// One variant per field, so `render` receives that field's own type.
+export type ColumnDef<T> = {
+  [K in keyof T & string]: {
+    key: K;
+    header: string;
+    sortable?: boolean;
+    align?: 'left' | 'right' | 'center';
+    render?: (value: T[K], item: T) => ReactNode;
+  };
+}[keyof T & string];
 
 export interface DataTableProps<T> {
   columns: ColumnDef<T>[];
   data: T[];
   searchPlaceholder?: string;
-  searchKey?: keyof T;
+  searchKey?: keyof T & string;
   filterOptions?: {
-    key: keyof T;
+    key: keyof T & string;
     label: string;
     options: string[];
   }[];
   selectable?: boolean;
-  bulkActions?: (selectedItems: T[]) => React.ReactNode;
-  keyField?: keyof T;
-  defaultSortKey?: keyof T | string;
+  bulkActions?: (selectedItems: T[]) => ReactNode;
+  keyField?: keyof T & string;
+  defaultSortKey?: keyof T & string;
   defaultSortAsc?: boolean;
   itemsPerPage?: number;
 }
 
-export default function DataTable<T extends Record<string, any>>({
+export default function DataTable<T extends object>({
   columns,
   data,
   searchPlaceholder = 'Search...',
@@ -61,16 +65,16 @@ export default function DataTable<T extends Record<string, any>>({
   filterOptions,
   selectable = false,
   bulkActions,
-  keyField = 'id' as keyof T,
+  keyField = 'id' as keyof T & string,
   defaultSortKey,
   defaultSortAsc = true,
   itemsPerPage = 10,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [sortKey, setSortKey] = useState<keyof T | string | undefined>(defaultSortKey);
+  const [sortKey, setSortKey] = useState<(keyof T & string) | undefined>(defaultSortKey);
   const [sortAsc, setSortAsc] = useState(defaultSortAsc);
-  const [selectedIds, setSelectedIds] = useState<Set<any>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<unknown>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
 
   // Apply filters and searches
@@ -88,15 +92,15 @@ export default function DataTable<T extends Record<string, any>>({
     // 2. Select Category Filters
     Object.entries(filters).forEach(([key, val]) => {
       if (val && val !== 'All') {
-        result = result.filter((item) => String(item[key]) === val);
+        result = result.filter((item) => String(item[key as keyof T]) === val);
       }
     });
 
     // 3. Sorting
     if (sortKey) {
       result.sort((a, b) => {
-        let av = a[sortKey as keyof T];
-        let bv = b[sortKey as keyof T];
+        const av = a[sortKey];
+        const bv = b[sortKey];
 
         if (av === undefined || av === null) return 1;
         if (bv === undefined || bv === null) return -1;
@@ -122,13 +126,23 @@ export default function DataTable<T extends Record<string, any>>({
     return data.filter((item) => selectedIds.has(item[keyField]));
   }, [data, selectedIds, keyField]);
 
-  // Reset page when queries alter
-  React.useEffect(() => {
+  // A new search or filter starts again from page one with nothing selected.
+  const resetView = () => {
     setCurrentPage(1);
     setSelectedIds(new Set());
-  }, [search, filters]);
+  };
 
-  const handleSort = (key: keyof T | string) => {
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    resetView();
+  };
+
+  const handleFilter = (key: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    resetView();
+  };
+
+  const handleSort = (key: keyof T & string) => {
     if (sortKey === key) {
       setSortAsc(!sortAsc);
     } else {
@@ -145,7 +159,7 @@ export default function DataTable<T extends Record<string, any>>({
     }
   };
 
-  const handleSelectRow = (id: any) => {
+  const handleSelectRow = (id: unknown) => {
     const next = new Set(selectedIds);
     if (next.has(id)) {
       next.delete(id);
@@ -161,17 +175,15 @@ export default function DataTable<T extends Record<string, any>>({
       <div className="flex flex-wrap items-center gap-3 justify-between">
         <div className="flex flex-wrap items-center gap-3 flex-1">
           {searchKey && (
-            <SearchInput value={search} onChange={setSearch} placeholder={searchPlaceholder} />
+            <SearchInput value={search} onChange={handleSearch} placeholder={searchPlaceholder} />
           )}
 
           {filterOptions &&
             filterOptions.map((fo) => (
               <div key={fo.label} className="relative">
                 <select
-                  value={filters[fo.key as string] || 'All'}
-                  onChange={(e) =>
-                    setFilters((prev) => ({ ...prev, [fo.key as string]: e.target.value }))
-                  }
+                  value={filters[fo.key] || 'All'}
+                  onChange={(e) => handleFilter(fo.key, e.target.value)}
                   className="appearance-none pl-3 pr-8 py-2 text-sm rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1a1a27] text-[#11191f] dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 cursor-pointer transition-colors"
                 >
                   <option value="All">All {fo.label}</option>
@@ -272,7 +284,7 @@ export default function DataTable<T extends Record<string, any>>({
                   const isSelected = selectedIds.has(id);
                   return (
                     <tr
-                      key={id}
+                      key={String(id)}
                       className={`hover:bg-gray-50/70 dark:hover:bg-white/[0.02] transition-colors ${
                         isSelected ? 'bg-indigo-50/30 dark:bg-indigo-500/[0.03]' : ''
                       }`}
@@ -288,7 +300,9 @@ export default function DataTable<T extends Record<string, any>>({
                         </td>
                       )}
                       {columns.map((col) => {
-                        const cellVal = row[col.key as string];
+                        const cellVal = row[col.key];
+                        // The variant for this key takes exactly this value; the union can't say so.
+                        const render = col.render as ((value: unknown, item: T) => ReactNode) | undefined;
                         return (
                           <td
                             key={col.header}
@@ -300,7 +314,7 @@ export default function DataTable<T extends Record<string, any>>({
                                 : 'text-left'
                             }`}
                           >
-                            {col.render ? col.render(cellVal, row) : cellVal}
+                            {render ? render(cellVal, row) : String(cellVal ?? '')}
                           </td>
                         );
                       })}

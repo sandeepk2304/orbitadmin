@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import type { Task } from '../types';
 import { storageService } from '../services/storageService';
+import { withProgress } from '../utils/progress';
 
 /**
  * Custom Hook: useTasks
@@ -17,21 +18,10 @@ import { storageService } from '../services/storageService';
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>(() => storageService.getTasks());
 
-  const updateProjectProgress = useCallback((projectId: string, currentTasks: Task[]) => {
-    const projectTasks = currentTasks.filter((t) => t.projectId === projectId);
-    if (projectTasks.length === 0) return;
-
-    const doneTasks = projectTasks.filter((t) => t.status === 'Done').length;
-    const progress = Math.round((doneTasks / projectTasks.length) * 100);
-
-    const projects = storageService.getProjects();
-    const updatedProjects = projects.map((p) => {
-      if (p.id === projectId) {
-        return { ...p, progress };
-      }
-      return p;
-    });
-    storageService.saveProjects(updatedProjects);
+  // Recalculate every project, not only the one on the task: an edit can move a task between
+  // projects, and deleting the last task has to bring its project back to 0.
+  const syncProgress = useCallback((currentTasks: Task[]) => {
+    storageService.saveProjects(withProgress(storageService.getProjects(), currentTasks));
   }, []);
 
   const addTask = useCallback((taskData: Omit<Task, 'id'>) => {
@@ -45,7 +35,7 @@ export function useTasks() {
     storageService.saveTasks(updated);
     setTasks(updated);
 
-    updateProjectProgress(taskData.projectId, updated);
+    syncProgress(updated);
 
     // Add activity log
     const activities = storageService.getActivities();
@@ -63,26 +53,17 @@ export function useTasks() {
     ]);
 
     return newTask;
-  }, [updateProjectProgress]);
+  }, [syncProgress]);
 
   const updateTask = useCallback((id: string, taskData: Partial<Task>) => {
     const currentTasks = storageService.getTasks();
-    let projectId = '';
-    const updated = currentTasks.map((t) => {
-      if (t.id === id) {
-        projectId = t.projectId;
-        return { ...t, ...taskData };
-      }
-      return t;
-    });
+    const updated = currentTasks.map((t) => (t.id === id ? { ...t, ...taskData } : t));
 
     storageService.saveTasks(updated);
     setTasks(updated);
 
-    if (projectId) {
-      updateProjectProgress(projectId, updated);
-    }
-  }, [updateProjectProgress]);
+    syncProgress(updated);
+  }, [syncProgress]);
 
   const deleteTask = useCallback((id: string) => {
     const currentTasks = storageService.getTasks();
@@ -92,9 +73,9 @@ export function useTasks() {
     storageService.saveTasks(updated);
     setTasks(updated);
 
-    if (taskToDelete) {
-      updateProjectProgress(taskToDelete.projectId, updated);
+    syncProgress(updated);
 
+    if (taskToDelete) {
       // Add activity log
       const activities = storageService.getActivities();
       storageService.saveActivities([
@@ -110,7 +91,7 @@ export function useTasks() {
         ...activities,
       ]);
     }
-  }, [updateProjectProgress]);
+  }, [syncProgress]);
 
   return {
     tasks,

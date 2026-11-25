@@ -1,5 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+import { ThemeContext, THEME_KEY } from './theme';
+import type { ResolvedTheme, ThemeChoice } from './theme';
 
 /**
  * ThemeContext
@@ -12,23 +14,6 @@ import type { ReactNode } from 'react';
  * 'system' is a real third state, not a default that collapses to light: it
  * follows the OS and keeps following it when the OS flips mid-session.
  */
-export type ThemeChoice = 'light' | 'dark' | 'system';
-export type ResolvedTheme = 'light' | 'dark';
-
-export const THEME_KEY = 'theme';
-
-interface ThemeValue {
-  /** What the user picked. */
-  theme: ThemeChoice;
-  /** What is actually on screen once 'system' is resolved. */
-  resolved: ResolvedTheme;
-  setTheme: (t: ThemeChoice) => void;
-  /** Flip between light and dark; from 'system' it flips away from what is shown. */
-  toggleTheme: () => void;
-}
-
-const ThemeContext = createContext<ThemeValue | null>(null);
-
 function readStored(): ThemeChoice {
   try {
     const v = localStorage.getItem(THEME_KEY);
@@ -91,10 +76,4 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
-}
-
-export function useTheme(): ThemeValue {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error('useTheme must be used inside <ThemeProvider>');
-  return ctx;
 }

@@ -3,12 +3,27 @@ import {
   LayoutDashboard, Users, Shield, FolderKanban, CheckSquare, 
   BarChart2, Bell, Settings as SettingsIcon, Menu, LogOut, Search 
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { Suspense, useState, useEffect } from 'react';
+import { useAuth } from '../context/auth';
 import { useSettings } from '../hooks/useSettings';
 import { useNotifications } from '../hooks/useNotifications';
 import OrbitLogo from './OrbitLogo';
 import ThemeToggle from './ThemeToggle';
+
+const NAV_ITEMS = [
+  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+  { name: 'Users', path: '/dashboard/users', icon: Users },
+  { name: 'Roles & Permissions', path: '/dashboard/roles-permissions', icon: Shield },
+  { name: 'Projects', path: '/dashboard/projects', icon: FolderKanban },
+  { name: 'Tasks', path: '/dashboard/tasks', icon: CheckSquare },
+  { name: 'Reports', path: '/dashboard/reports', icon: BarChart2 },
+  { name: 'Notifications', path: '/dashboard/notifications', icon: Bell },
+  { name: 'Settings', path: '/dashboard/settings', icon: SettingsIcon },
+];
+
+// '/dashboard' is the index, so it only matches itself: every other page starts with it too.
+const isActivePath = (path: string, current: string) =>
+  current === path || (path !== '/dashboard' && current.startsWith(`${path}/`));
 
 /**
  * Layout Component
@@ -18,36 +33,22 @@ import ThemeToggle from './ThemeToggle';
  * light/dark theme toggle, session user status, notification indicators.
  */
 export default function Layout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  // The path the mobile sidebar was opened on. Any navigation, including the back button,
+  // changes the path and so closes it.
+  const [openedOn, setOpenedOn] = useState<string | null>(null);
+  const sidebarOpen = openedOn === location.pathname;
   const { logout } = useAuth();
   const { settings } = useSettings();
   const { notifications } = useNotifications();
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const navItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Users', path: '/dashboard/users', icon: Users },
-    { name: 'Roles & Permissions', path: '/dashboard/roles-permissions', icon: Shield },
-    { name: 'Projects', path: '/dashboard/projects', icon: FolderKanban },
-    { name: 'Tasks', path: '/dashboard/tasks', icon: CheckSquare },
-    { name: 'Reports', path: '/dashboard/reports', icon: BarChart2 },
-    { name: 'Notifications', path: '/dashboard/notifications', icon: Bell, count: unreadCount },
-    { name: 'Settings', path: '/dashboard/settings', icon: SettingsIcon },
-  ];
+  const current = NAV_ITEMS.find((item) => isActivePath(item.path, location.pathname));
 
-  // Set document title dynamically based on location
   useEffect(() => {
-    const p = location.pathname;
-    const match = navItems.find((item) => p === item.path || p.startsWith(item.path + '/'));
-    document.title = match ? `${match.name} — OrbitAdmin` : 'OrbitAdmin';
-  }, [location.pathname]);
-
-  // Close sidebar on path navigation (mobile)
-  useEffect(() => {
-    setSidebarOpen(false);
-  }, [location.pathname]);
+    document.title = current ? `${current.name} — OrbitAdmin` : 'OrbitAdmin';
+  }, [current]);
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#0d0d14] text-gray-900 dark:text-gray-100 flex font-sans transition-colors duration-200">
@@ -76,8 +77,9 @@ export default function Layout() {
 
         {/* Navigation items */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+          {NAV_ITEMS.map((item) => {
+            const isActive = item === current;
+            const count = item.path === '/dashboard/notifications' ? unreadCount : 0;
             return (
               <Link
                 key={item.name}
@@ -95,9 +97,9 @@ export default function Layout() {
                   />
                   <span>{item.name}</span>
                 </div>
-                {item.count !== undefined && item.count > 0 && (
+                {count > 0 && (
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${isActive ? 'bg-white text-indigo-500' : 'bg-indigo-500/20 text-indigo-400'}`}>
-                    {item.count}
+                    {count}
                   </span>
                 )}
               </Link>
@@ -111,17 +113,13 @@ export default function Layout() {
         <header className="flex items-center justify-between px-8 py-5 bg-white dark:bg-[#1a1a27] border-b border-gray-100 dark:border-white/5 transition-colors duration-200 shrink-0">
           <div className="flex items-center">
             <button
-              onClick={() => setSidebarOpen(true)}
+              onClick={() => setOpenedOn(location.pathname)}
               className="md:hidden mr-4 p-2 bg-gray-100 dark:bg-[#242435] rounded-lg shadow-sm cursor-pointer"
             >
               <Menu size={20} className="dark:text-white" />
             </button>
             <h2 className="text-xl font-bold tracking-tight text-[#11191f] dark:text-white">
-              {(() => {
-                const p = location.pathname;
-                const match = navItems.find((item) => p === item.path || p.startsWith(item.path + '/'));
-                return match?.name ?? 'Admin Portal';
-              })()}
+              {current?.name ?? 'Admin Portal'}
             </h2>
           </div>
 
@@ -172,7 +170,10 @@ export default function Layout() {
 
         {/* Sub-view Area */}
         <div className="flex-1 overflow-auto p-8">
-          <Outlet />
+          {/* Keeps the sidebar and header in place while a screen's chunk loads. */}
+          <Suspense fallback={null}>
+            <Outlet />
+          </Suspense>
         </div>
       </main>
 
@@ -180,7 +181,7 @@ export default function Layout() {
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
-          onClick={() => setSidebarOpen(false)}
+          onClick={() => setOpenedOn(null)}
         />
       )}
     </div>

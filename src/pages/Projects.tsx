@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useProjects } from '../hooks/useProjects';
@@ -37,7 +37,7 @@ export default function Projects() {
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     reset,
     formState: { errors, isDirty },
   } = useForm<ProjectFormData>({
@@ -45,7 +45,7 @@ export default function Projects() {
     defaultValues: { name: '', description: '', status: 'Planning', dueDate: '', budget: 0, members: [] },
   });
 
-  const selectedMembers = watch('members') || [];
+  const selectedMembers = useWatch({ control, name: 'members' }) || [];
 
   const handleOpenAdd = () => {
     setEditingProject(null);

@@ -56,7 +56,10 @@ src/
 │   ├── ProtectedRoute.tsx # Route authentication check
 │   └── StatusBadge.tsx   # State badge resolver (e.g. Active, High, Done)
 ├── context/
-│   └── AuthContext.tsx   # Session management
+│   ├── auth.ts           # useAuth hook and context
+│   ├── AuthContext.tsx   # Session provider
+│   ├── theme.ts          # useTheme hook and context
+│   └── ThemeContext.tsx  # Theme provider
 ├── hooks/                # Isolated CRUD and mutation hooks
 │   ├── useDashboardData.ts
 │   ├── useNotifications.ts
@@ -80,7 +83,9 @@ src/
 │   └── storageService.ts # Local Storage CRUD mock database engine
 ├── types/
 │   └── index.ts          # Unified TS interface types
-├── App.tsx               # Route mapping
+├── utils/
+│   └── progress.ts       # Project progress, calculated from its tasks
+├── App.tsx               # Route mapping, one lazy chunk per screen
 └── index.css             # Tailwind v4 configuration, font family setup, scrollbars
 ```
 

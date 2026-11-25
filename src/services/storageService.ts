@@ -2,6 +2,7 @@ import type {
   User, Role, Permission, Project, Task, 
   Notification, SystemSettings, Activity, DashboardMetrics 
 } from '../types';
+import { withProgress } from '../utils/progress';
 
 // Constants for storage keys
 const KEYS = {
@@ -126,14 +127,14 @@ const DEFAULT_USERS: User[] = [
   },
 ];
 
-// Seed Projects
+// Seed Projects. Progress is calculated from the seed tasks on first load.
 const DEFAULT_PROJECTS: Project[] = [
   {
     id: 'proj-1',
     name: 'SaaS Platform Redesign',
     description: 'Complete overhaul of the customer-facing SaaS portal with responsive, modern styling and fluid layouts.',
     status: 'Active',
-    progress: 68,
+    progress: 0,
     dueDate: '2026-07-15',
     budget: 45000,
     members: ['u-1', 'u-2'],
@@ -143,7 +144,7 @@ const DEFAULT_PROJECTS: Project[] = [
     name: 'Mobile App Development',
     description: 'Native iOS and Android apps connected to our core API service, featuring offline sync and push notifications.',
     status: 'Active',
-    progress: 42,
+    progress: 0,
     dueDate: '2026-09-30',
     budget: 85000,
     members: ['u-1', 'u-4'],
@@ -153,7 +154,7 @@ const DEFAULT_PROJECTS: Project[] = [
     name: 'Stripe Billing Integration',
     description: 'Migrate legacy checkout system to Stripe Billing, supporting multi-tier subscriptions and customer portal management.',
     status: 'Completed',
-    progress: 100,
+    progress: 0,
     dueDate: '2026-05-30',
     budget: 15000,
     members: ['u-2'],
@@ -163,7 +164,7 @@ const DEFAULT_PROJECTS: Project[] = [
     name: 'Security Audit & Compliance',
     description: 'Prepare codebase for SOC2 compliance, perform comprehensive penetration testing, and fix vulnerability logs.',
     status: 'On Hold',
-    progress: 15,
+    progress: 0,
     dueDate: '2026-11-15',
     budget: 30000,
     members: ['u-1', 'u-5'],
@@ -221,6 +222,66 @@ const DEFAULT_TASKS: Task[] = [
     assigneeId: 'u-5',
     projectId: 'proj-4',
     dueDate: '2026-07-05',
+  },
+  {
+    id: 't-6',
+    title: 'Rebuild Navigation Menu',
+    description: 'Move the portal to the new menu and remove the old routes.',
+    status: 'Done',
+    priority: 'Medium',
+    assigneeId: 'u-1',
+    projectId: 'proj-1',
+    dueDate: '2026-06-20',
+  },
+  {
+    id: 't-7',
+    title: 'Offline Sync Prototype',
+    description: 'Queue writes on the device and replay them when the connection returns.',
+    status: 'In Progress',
+    priority: 'High',
+    assigneeId: 'u-1',
+    projectId: 'proj-2',
+    dueDate: '2026-08-12',
+  },
+  {
+    id: 't-8',
+    title: 'App Icon and Splash Screens',
+    description: 'Export icons and launch screens for both stores.',
+    status: 'Done',
+    priority: 'Low',
+    assigneeId: 'u-4',
+    projectId: 'proj-2',
+    dueDate: '2026-06-30',
+  },
+  {
+    id: 't-9',
+    title: 'Customer Portal Handover',
+    description: 'Check plan changes and invoices in the Stripe customer portal.',
+    status: 'Done',
+    priority: 'Medium',
+    assigneeId: 'u-2',
+    projectId: 'proj-3',
+    dueDate: '2026-05-28',
+  },
+  {
+    id: 't-10',
+    title: 'Dependency Review',
+    description: 'List outdated packages and plan the upgrades.',
+    status: 'Done',
+    priority: 'Medium',
+    assigneeId: 'u-1',
+    projectId: 'proj-4',
+    dueDate: '2026-06-18',
+  },
+  {
+    id: 't-11',
+    title: 'Penetration Test Scope',
+    description: 'Agree the scope and dates with the testing team.',
+    status: 'Todo',
+    priority: 'High',
+    assigneeId: 'u-5',
+    projectId: 'proj-4',
+    dueDate: '2026-09-01',
   },
 ];
 
@@ -356,7 +417,7 @@ class StorageService {
 
     // Seed Projects
     if (!localStorage.getItem(KEYS.PROJECTS)) {
-      this.save(KEYS.PROJECTS, DEFAULT_PROJECTS);
+      this.save(KEYS.PROJECTS, withProgress(DEFAULT_PROJECTS, DEFAULT_TASKS));
     }
 
     // Seed Tasks

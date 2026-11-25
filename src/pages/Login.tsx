@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/auth';
 import OrbitLogo from '../components/OrbitLogo';
 import ThemeToggle from '../components/ThemeToggle';
 
@@ -41,10 +41,10 @@ function Blob({ className }: { className: string }) {
  * really did land on this site, then got bounced somewhere that looks like it.
  */
 function safeNext(search: string): string {
-  const raw = new URLSearchParams(search).get('next');
-  if (!raw) return '/dashboard';
-  const decoded = decodeURIComponent(raw);
-  return decoded.startsWith('/') && !decoded.startsWith('//') ? decoded : '/dashboard';
+  // get() already decodes; decoding again would let %255C through as a backslash.
+  const next = new URLSearchParams(search).get('next') ?? '';
+  // One leading slash, not followed by a slash or a backslash: browsers read both as a host.
+  return /^\/(?![/\\])/.test(next) ? next : '/dashboard';
 }
 
 export default function Login() {

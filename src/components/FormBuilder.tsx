@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
+import type { DefaultValues, FieldValues, Path } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import type { z } from 'zod';
 
 /**
  * FormBuilder Component
@@ -40,9 +41,9 @@ export interface FormFieldConfig {
   description?: string; // Hint text
 }
 
-export interface FormBuilderProps<T extends Record<string, any>> {
+export interface FormBuilderProps<T extends FieldValues> {
   fields: FormFieldConfig[];
-  validationSchema: z.ZodType<T>;
+  validationSchema: z.ZodType<T, T>;
   defaultValues: T;
   onSubmit: (data: T) => void | Promise<void>;
   submitText?: string;
@@ -50,7 +51,7 @@ export interface FormBuilderProps<T extends Record<string, any>> {
   onCancel?: () => void;
 }
 
-export default function FormBuilder<T extends Record<string, any>>({
+export default function FormBuilder<T extends FieldValues>({
   fields,
   validationSchema,
   defaultValues,
@@ -63,17 +64,18 @@ export default function FormBuilder<T extends Record<string, any>>({
     register,
     handleSubmit,
     formState: { errors, isSubmitting, isDirty },
-  } = useForm<any>({
-    resolver: zodResolver(validationSchema as any),
-    defaultValues: defaultValues as any,
+  } = useForm<T, unknown, T>({
+    resolver: zodResolver(validationSchema),
+    defaultValues: defaultValues as DefaultValues<T>,
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div className="space-y-4">
         {fields.map((field) => {
-          const hasError = !!errors[field.name];
-          const errorMsg = errors[field.name]?.message as string;
+          const name = field.name as Path<T>;
+          const hasError = !!errors[name];
+          const errorMsg = errors[name]?.message as string | undefined;
 
           return (
             <div key={field.name} className="space-y-1">
@@ -91,7 +93,7 @@ export default function FormBuilder<T extends Record<string, any>>({
                 <input
                   type={field.type}
                   placeholder={field.placeholder}
-                  {...register(field.name as any, { valueAsNumber: field.type === 'number' })}
+                  {...register(name, { valueAsNumber: field.type === 'number' })}
                   className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 bg-transparent text-[#11191f] dark:text-white transition-colors ${
                     hasError
                       ? 'border-red-500 focus:ring-red-500/30'
@@ -105,7 +107,7 @@ export default function FormBuilder<T extends Record<string, any>>({
                 <textarea
                   placeholder={field.placeholder}
                   rows={4}
-                  {...register(field.name as any)}
+                  {...register(name)}
                   className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 bg-transparent text-[#11191f] dark:text-white resize-none transition-colors ${
                     hasError
                       ? 'border-red-500 focus:ring-red-500/30'
@@ -118,7 +120,7 @@ export default function FormBuilder<T extends Record<string, any>>({
               {field.type === 'select' && (
                 <div className="relative">
                   <select
-                    {...register(field.name as any)}
+                    {...register(name)}
                     className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 bg-white dark:bg-[#1a1a27] text-[#11191f] dark:text-white transition-colors appearance-none ${
                       hasError
                         ? 'border-red-500 focus:ring-red-500/30'
@@ -150,7 +152,7 @@ export default function FormBuilder<T extends Record<string, any>>({
                   <div className="relative ml-4 shrink-0">
                     <input
                       type="checkbox"
-                      {...register(field.name as any)}
+                      {...register(name)}
                       className="sr-only peer"
                     />
                     <div className="w-11 h-6 bg-gray-200 dark:bg-white/10 rounded-full peer-checked:bg-indigo-500 transition-colors" />
