@@ -122,4 +122,4 @@ Use the following credentials on the login screen to access the admin panel:
 
 ## 📄 License
 
-MIT — Free to use as a starting template or reference for SaaS applications.
+[MIT](LICENSE). Free to use as a starting template or reference for SaaS applications.

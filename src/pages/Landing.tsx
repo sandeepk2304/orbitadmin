@@ -55,7 +55,7 @@ const STACK = [
   ['TypeScript', 'strict mode, no implicit any'],
   ['Tailwind CSS v4', 'tokens in CSS variables, themeable per brand'],
   ['React Router 7', 'nested routes, protected sections, real 404s'],
-  ['MIT licence', 'use it commercially, no attribution required'],
+  ['MIT licence', 'use it commercially, keep the licence notice'],
 ];
 
 const FAQS = [
@@ -77,7 +77,7 @@ const FAQS = [
   },
   {
     q: 'What are the licence terms?',
-    a: 'MIT. Modify it, ship it inside a commercial product, sell dashboards built with it. No attribution required.',
+    a: 'MIT. Modify it, ship it inside a commercial product, sell dashboards built with it. Keep the copyright and licence notice in the code.',
   },
 ];
 
